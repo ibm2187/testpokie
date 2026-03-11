@@ -16,9 +16,9 @@ This document records the prompts used with Claude Code (Claude Opus 4.6) during
 > do 3 deep code reviews
 
 Three parallel review agents were launched focusing on:
-- Architecture & Patterns
-- Performance & UX
-- Security & Production Readiness
+- Architecture & Patterns (layer separation, state management, type safety, scalability)
+- Performance & UX (FlatList optimization, re-renders, accessibility, error/loading states)
+- Security & Production Readiness (security, edge cases, code quality, interview readiness)
 
 ## Prompt 4 — Pull to Refresh + Edge to Edge
 > we also need to add pull to refresh. also, details screen needs edge to edge support.
@@ -31,3 +31,20 @@ Three parallel review agents were launched focusing on:
 
 ## Prompt 7 — Theme System
 > we should use semantic color names, as well as semantic font sizes, etc. I don't want hardcoded stuff
+
+## Prompt 8 — Edge to Edge Fix + Offline Error Banner
+> 1. we still need edge to edge fixes in the details screen. 2. when pulling to refresh while offline, no error shows up and the cached data still shows up.
+
+## Prompt 9 — Localization
+> we should also make sure the app supports localization, use french and spanish
+
+## Prompt 10 — Settings Screen
+> let's plan adding a settings page with an option to change language
+
+## Prompt 11 — Offline Refresh Fix
+> when refreshing the list screen while offline, cached data does not go away. nor do we see an error state
+
+## Prompt 12 — HTTP Cache Bypass
+> still somehow showing cached data even when paginating offline. how's that possible?
+
+Root cause: `fetch` was using the default HTTP cache, so the runtime served cached responses even offline. Fixed by adding `cache: "no-store"` to all fetch calls.

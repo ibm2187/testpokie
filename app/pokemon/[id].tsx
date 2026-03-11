@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Pressable,
 } from "react-native";
-import { useLocalSearchParams, Stack } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { usePokemonDetail } from "../../src/hooks/usePokemonDetail";
@@ -32,8 +32,7 @@ import {
   iconSizes,
   imageSizes,
 } from "../../src/theme";
-
-const HEADER_HEIGHT = 44;
+import i18n from "../../src/i18n";
 
 export default function PokemonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -41,6 +40,7 @@ export default function PokemonDetailScreen() {
   const { pokemon, loading, error, retry } = usePokemonDetail(pokemonId);
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   if (loading) {
     return (
@@ -51,7 +51,16 @@ export default function PokemonDetailScreen() {
   }
 
   if (error || !pokemon) {
-    return <ErrorState message={error ?? "Pokemon not found"} onRetry={retry} />;
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={[styles.backButtonContainer, { top: insets.top }]}>
+          <Pressable onPress={() => router.back()} style={styles.backButton} hitSlop={8}>
+            <Ionicons name="arrow-back" size={iconSizes.md} color={colors.textPrimary} />
+          </Pressable>
+        </View>
+        <ErrorState message={error ?? i18n.t("error.notFound")} onRetry={retry} />
+      </View>
+    );
   }
 
   const favorited = isFavorite(pokemon.id);
@@ -71,26 +80,17 @@ export default function PokemonDetailScreen() {
   const bgColor = primaryType ? getTypeColor(primaryType) : colors.backgroundSecondary;
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: capitalize(pokemon.name),
-          headerTransparent: true,
-          headerTintColor: colors.textOnDark,
-          headerStyle: { backgroundColor: colors.transparent },
-          headerTitleStyle: { color: colors.textOnDark, fontWeight: fontWeights.bold },
-        }}
-      />
+    <View style={styles.screen}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, spacing.xxl) + spacing.xxl }]}
       >
-        {/* Edge-to-edge hero image with type-colored background */}
-        <View style={[styles.imageContainer, { backgroundColor: bgColor, paddingTop: insets.top + HEADER_HEIGHT }]}>
+        {/* Edge-to-edge hero — extends behind status bar */}
+        <View style={[styles.heroContainer, { backgroundColor: bgColor, paddingTop: insets.top + 56 }]}>
           {imageUrl && (
             <Image
               source={{ uri: imageUrl }}
-              style={styles.image}
+              style={styles.heroImage}
               resizeMode="contain"
             />
           )}
@@ -98,9 +98,9 @@ export default function PokemonDetailScreen() {
 
         {/* Name and ID */}
         <View style={styles.header}>
-          <View>
+          <View style={styles.headerText}>
             <Text style={styles.name}>{capitalize(pokemon.name)}</Text>
-            <Text style={styles.id}>{formatPokemonId(pokemon.id)}</Text>
+            <Text style={styles.idText}>{formatPokemonId(pokemon.id)}</Text>
           </View>
           <Pressable onPress={toggleFavorite} style={styles.favButton} hitSlop={8}>
             <Ionicons
@@ -120,22 +120,22 @@ export default function PokemonDetailScreen() {
 
         {/* Physical */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Physical</Text>
+          <Text style={styles.sectionTitle}>{i18n.t("detail.physical")}</Text>
           <View style={styles.physicalRow}>
             <View style={styles.physicalItem}>
-              <Text style={styles.physicalLabel}>Height</Text>
+              <Text style={styles.physicalLabel}>{i18n.t("detail.height")}</Text>
               <Text style={styles.physicalValue}>
                 {formatHeight(pokemon.height)}
               </Text>
             </View>
             <View style={styles.physicalItem}>
-              <Text style={styles.physicalLabel}>Weight</Text>
+              <Text style={styles.physicalLabel}>{i18n.t("detail.weight")}</Text>
               <Text style={styles.physicalValue}>
                 {formatWeight(pokemon.weight)}
               </Text>
             </View>
             <View style={styles.physicalItem}>
-              <Text style={styles.physicalLabel}>Base XP</Text>
+              <Text style={styles.physicalLabel}>{i18n.t("detail.baseXp")}</Text>
               <Text style={styles.physicalValue}>{pokemon.base_experience}</Text>
             </View>
           </View>
@@ -143,7 +143,7 @@ export default function PokemonDetailScreen() {
 
         {/* Stats */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Base Stats</Text>
+          <Text style={styles.sectionTitle}>{i18n.t("detail.baseStats")}</Text>
           {pokemon.stats.map((s) => (
             <StatBar
               key={s.stat.name}
@@ -155,27 +155,41 @@ export default function PokemonDetailScreen() {
 
         {/* Abilities */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Abilities</Text>
+          <Text style={styles.sectionTitle}>{i18n.t("detail.abilities")}</Text>
           {pokemon.abilities.map((a) => (
             <View key={a.ability.name} style={styles.abilityRow}>
               <Text style={styles.abilityName}>
-                {capitalize(a.ability.name.replace("-", " "))}
+                {capitalize(a.ability.name.replace(/-/g, " "))}
               </Text>
               {a.is_hidden && (
-                <Text style={styles.hiddenBadge}>Hidden</Text>
+                <Text style={styles.hiddenBadge}>{i18n.t("detail.hidden")}</Text>
               )}
             </View>
           ))}
         </View>
       </ScrollView>
-    </>
+
+      {/* Floating back button over the hero */}
+      <View style={[styles.backButtonContainer, { top: insets.top }]}>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backButton}
+          hitSlop={8}
+        >
+          <Ionicons name="arrow-back" size={iconSizes.md} color={colors.textOnDark} />
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  container: {
+    flex: 1,
   },
   content: {
     paddingBottom: spacing.screen,
@@ -186,14 +200,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: spacing.xxl,
   },
-  imageContainer: {
+  heroContainer: {
     alignItems: "center",
-    backgroundColor: colors.backgroundSecondary,
-    paddingVertical: spacing.xxl,
+    paddingBottom: spacing.xxl,
   },
-  image: {
+  heroImage: {
     width: imageSizes.detailHero,
     height: imageSizes.detailHero,
+  },
+  backButtonContainer: {
+    position: "absolute",
+    left: spacing.xl,
+    zIndex: 10,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,0,0,0.25)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   header: {
     flexDirection: "row",
@@ -202,12 +228,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
     paddingTop: spacing.xxl,
   },
+  headerText: {
+    flex: 1,
+  },
   name: {
     fontSize: fontSizes.displaySmall,
     fontWeight: fontWeights.extrabold,
     color: colors.textPrimary,
   },
-  id: {
+  idText: {
     fontSize: fontSizes.subtitle,
     color: colors.textTertiary,
     fontWeight: fontWeights.semibold,

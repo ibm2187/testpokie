@@ -5,6 +5,7 @@ import { useFavorites } from "../../src/context/FavoritesContext";
 import { PokemonCard } from "../../src/components/PokemonCard";
 import { FavoritePokemon } from "../../src/types/pokemon";
 import { colors, fontSizes, fontWeights, spacing } from "../../src/theme";
+import i18n from "../../src/i18n";
 
 export default function FavoritesScreen() {
   const { favorites, loaded } = useFavorites();
@@ -22,9 +23,9 @@ export default function FavoritesScreen() {
     return (
       <View style={styles.empty}>
         <Text style={styles.emptyIcon}>{'<3'}</Text>
-        <Text style={styles.emptyTitle}>No Favorites Yet</Text>
+        <Text style={styles.emptyTitle}>{i18n.t("favorites.emptyTitle")}</Text>
         <Text style={styles.emptySubtitle}>
-          Tap the heart icon on any Pokemon to add it to your favorites.
+          {i18n.t("favorites.emptySubtitle")}
         </Text>
       </View>
     );

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, fontSizes, fontWeights, radii, spacing, iconSizes } from "../theme";
+import i18n from "../i18n";
 
 interface ErrorStateProps {
   message: string;
@@ -22,16 +23,14 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
         color={colors.error}
       />
       <Text style={styles.title}>
-        {isNetworkError ? "No Connection" : "Something Went Wrong"}
+        {isNetworkError ? i18n.t("error.noConnection") : i18n.t("error.somethingWrong")}
       </Text>
       <Text style={styles.message}>
-        {isNetworkError
-          ? "Please check your internet connection and try again."
-          : message}
+        {isNetworkError ? i18n.t("error.networkMessage") : message}
       </Text>
       <Pressable style={styles.retryButton} onPress={onRetry}>
         <Ionicons name="refresh" size={iconSizes.sm} color={colors.textOnPrimary} style={styles.retryIcon} />
-        <Text style={styles.retryText}>Try Again</Text>
+        <Text style={styles.retryText}>{i18n.t("error.tryAgain")}</Text>
       </Pressable>
     </View>
   );

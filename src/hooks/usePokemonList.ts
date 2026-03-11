@@ -73,6 +73,9 @@ export function usePokemonList() {
       setPokemon(entries);
       setOffset(PAGE_SIZE);
     } catch (err) {
+      setPokemon([]);
+      setOffset(0);
+      setTotalCount(0);
       setError(err instanceof Error ? err.message : "Failed to load Pokemon");
     } finally {
       setRefreshing(false);
@@ -85,6 +88,10 @@ export function usePokemonList() {
     loadPage(0, true);
   }, [loadPage]);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     pokemon,
     loading,
@@ -96,5 +103,6 @@ export function usePokemonList() {
     loadMore,
     refresh,
     retry,
+    clearError,
   };
 }
